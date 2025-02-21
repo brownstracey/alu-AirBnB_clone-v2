@@ -10,14 +10,13 @@ class FileStorage:
 
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-        if cls is None:
-            return FileStorage.__objects
-        else:
-            temp = {}
-            for key, val in FileStorage.__objects.items():
-                if cls.__name__ in key:
-                    temp[key] = val
-            return temp
+        if cls:
+            filtered_objects = {
+                k: v for k, v in FileStorage.__objects.items()
+                if isinstance(v, cls)
+                }
+            return filtered_objects
+        return FileStorage.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -43,10 +42,10 @@ class FileStorage:
         from models.review import Review
 
         classes = {
-            'BaseModel': BaseModel, 'User': User, 'Place': Place,
-            'State': State, 'City': City, 'Amenity': Amenity,
-            'Review': Review
-        }
+                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
+                    'State': State, 'City': City, 'Amenity': Amenity,
+                    'Review': Review
+                  }
         try:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
@@ -57,15 +56,16 @@ class FileStorage:
             pass
 
     def delete(self, obj=None):
-        """Deletes obj from __objects if it’s inside"""
-        if obj is not None:
+        """Delete obj from __objects if it’s inside
+        """
+        if obj:
             key = obj.__class__.__name__ + '.' + obj.id
-            if key in FileStorage.__objects:
-                del FileStorage.__objects[key]
-                self.save()
-        else:
-            pass
+            if key in self.__objects:
+                del self.__objects[key]
+            self.save()
 
     def close(self):
-        """Calls reload() method"""
+        """ calls reload()
+        """
         self.reload()
+  
