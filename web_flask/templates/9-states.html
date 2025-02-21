@@ -5,7 +5,7 @@
     </HEAD>
     <BODY>
 
-    {% if states %}  {# Check if states dictionary exists #}
+    {% if states %}
         <H1>States</H1>
         <UL>
         {% for s in states.values() | sort(attribute="name") %}
@@ -13,11 +13,11 @@
         {% endfor %}
         </UL>
 
-    {% elif state is defined and state %}  {# Check if a valid state object exists #}
+    {% elif state %}
         <H1>State: {{ state.name }}</H1>
         <H3>Cities:</H3>
         <UL>
-        {% if state.cities %}  {# Ensure state has cities before looping #}
+        {% if state.cities %}
             {% for city in state.cities | sort(attribute="name") %}
                 <LI>{{ city.id }}: <B>{{ city.name }}</B></LI>
             {% endfor %}
@@ -26,7 +26,7 @@
         {% endif %}
         </UL>
 
-    {% else %}  {# If no valid states or state is found, show not found #}
+    {% else %}
         <H1>Not found!</H1>
     {% endif %}
 
