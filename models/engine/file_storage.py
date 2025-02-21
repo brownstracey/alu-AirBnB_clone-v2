@@ -9,27 +9,21 @@ class FileStorage:
     __objects = {}
 
     def all(self, cls=None):
-        """Returns a dictionary of models currently in storage"""
+        """Returns a dictionary of models currently in storage
+        If cls is specified, only returns objects of that class"""
         if cls is None:
             return FileStorage.__objects
-        else:
-            temp = {}
-            for key, val in FileStorage.__objects.items():
-                if cls.__name__ in key:
-                    temp[key] = val
-            return temp
+        return {key: val for key, val in FileStorage.__objects.items() if isinstance(val, cls)}
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
-        self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
+        key = f"{obj.__class__.__name__}.{obj.id}"
+        FileStorage.__objects[key] = obj
 
     def save(self):
         """Saves storage dictionary to file"""
         with open(FileStorage.__file_path, 'w') as f:
-            temp = {}
-            temp.update(FileStorage.__objects)
-            for key, val in temp.items():
-                temp[key] = val.to_dict()
+            temp = {key: val.to_dict() for key, val in FileStorage.__objects.items()}
             json.dump(temp, f)
 
     def reload(self):
@@ -48,24 +42,20 @@ class FileStorage:
             'Review': Review
         }
         try:
-            temp = {}
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                    self.all()[key] = classes[val['__class__']](**val)
+                    FileStorage.__objects[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
 
     def delete(self, obj=None):
         """Deletes obj from __objects if it’s inside"""
-        if obj is not None:
-            key = obj.__class__.__name__ + '.' + obj.id
-            if key in FileStorage.__objects:
-                del FileStorage.__objects[key]
-                self.save()
-        else:
-            pass
+        if obj:
+            key = f"{obj.__class__.__name__}.{obj.id}"
+            FileStorage.__objects.pop(key, None)  # Removes the key if found
+            self.save()
 
     def close(self):
-        """Calls reload() method"""
+        """Calls reload() method to refresh objects from storage"""
         self.reload()
