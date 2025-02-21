@@ -29,41 +29,41 @@ class DBStorage:
             Base.metadata.drop_all(self._engine)
 
     def all(self, cls=None):
-        """Returns a dictionary of all objects"""
-        classes = [User, State, City, Place, Amenity, Review]
+        """Returns a dictionary of all objects of a given class, or all if cls is None"""
+        classes = {"User": User, "State": State, "City": City,
+                   "Place": Place, "Amenity": Amenity, "Review": Review}
         new_dict = {}
+
         if cls is None:
-            for c in classes:
+            for c in classes.values():
                 for obj in self._session.query(c).all():
-                    key = obj.__class__.__name__ + '.' + obj.id
-                    new_dict[key] = obj
+                    new_dict[f"{obj.__class__.__name__}.{obj.id}"] = obj
         else:
             for obj in self._session.query(cls).all():
-                key = obj.__class__.__name__ + '.' + obj.id
-                new_dict[key] = obj
+                new_dict[f"{obj.__class__.__name__}.{obj.id}"] = obj
+
         return new_dict
 
     def new(self, obj):
-        """Adds a new object to the database"""
-        self._session.add(obj)
+        """Adds a new object to the current database session"""
+        if obj:
+            self._session.add(obj)
 
     def save(self):
-        """Saves all changes to the database"""
+        """Commits all changes to the database"""
         self._session.commit()
 
     def delete(self, obj=None):
         """Deletes an object from the database"""
-        if obj is not None:
+        if obj:
             self._session.delete(obj)
 
     def reload(self):
-        """Reloads all tables"""
+        """Reloads all tables and creates a new session"""
         Base.metadata.create_all(self._engine)
-        session_factory = sessionmaker(bind=self._engine,
-                                       expire_on_commit=False)
-        Session = scoped_session(session_factory)
-        self._session = Session()
+        session_factory = sessionmaker(bind=self._engine, expire_on_commit=False)
+        self._session = scoped_session(session_factory)
 
     def close(self):
-        """Close the session"""
-        self._session.close()
+        """Closes the session properly"""
+        self._session.remove()
