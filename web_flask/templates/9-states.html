@@ -4,23 +4,31 @@
         <TITLE>HBNB</TITLE>
     </HEAD>
     <BODY>
-    {% if state is mapping %}
+
+    {% if states %}  {# Check if states dictionary exists #}
         <H1>States</H1>
         <UL>
-        {% for s in state.values()|sort(attribute="name") %}
+        {% for s in states.values() | sort(attribute="name") %}
             <LI>{{ s.id }}: <B>{{ s.name }}</B></LI>
         {% endfor %}
         </UL>
-    {% elif state is defined %}
+
+    {% elif state is defined and state %}  {# Check if a valid state object exists #}
         <H1>State: {{ state.name }}</H1>
         <H3>Cities:</H3>
         <UL>
-        {% for city in state.cities|sort(attribute="name") %}
-            <LI>{{ city.id }}: <B>{{ city.name }}</B></LI>
-        {% endfor %}
+        {% if state.cities %}  {# Ensure state has cities before looping #}
+            {% for city in state.cities | sort(attribute="name") %}
+                <LI>{{ city.id }}: <B>{{ city.name }}</B></LI>
+            {% endfor %}
+        {% else %}
+            <LI>No cities available</LI>
+        {% endif %}
         </UL>
-    {% else %}
+
+    {% else %}  {# If no valid states or state is found, show not found #}
         <H1>Not found!</H1>
     {% endif %}
+
     </BODY>
 </HTML>
