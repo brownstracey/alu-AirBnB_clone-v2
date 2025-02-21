@@ -4,7 +4,6 @@
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
-from models.city import City
 import models
 import os
 
@@ -23,6 +22,7 @@ class State(BaseModel, Base):
         @property
         def cities(self):
             """ Returns the list of City instances with state_id
-            equals to the current State.id. """
+            equal to the current State.id. """
+            from models.city import City  # ✅ Move import here to avoid circular import issues
             return [city for city in models.storage.all(City).values()
                     if city.state_id == self.id]
